@@ -4,6 +4,8 @@
 
 **在线体验**：[https:/hemanruc.github.io/OmniPage/](https://hemanruc.github.io/OmniPage/)
 
+![截图](screenshot.png)
+
 ## 这是什么？
 
 OmniPage 是一个**单文件个人导航主页**。整个项目只有一个 `index.html`，无需安装、无需服务器、无需数据库，浏览器打开即用。数据保存在浏览器本地，不上传任何服务器。
