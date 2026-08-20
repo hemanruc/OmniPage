@@ -2,7 +2,7 @@
 
 > 一个 HTML 文件，装下你的整个导航主页。
 
-**在线体验**：[https://YOUR-USERNAME.github.io/OmniPage/](https://YOUR-USERNAME.github.io/OmniPage/)
+**在线体验**：[https:/hemanruc.github.io/OmniPage/](https://hemanruc.github.io/OmniPage/)
 
 ## 这是什么？
 
@@ -22,7 +22,7 @@ OmniPage 是一个**单文件个人导航主页**。整个项目只有一个 `in
 
 ## 快速上手
 
-1. **直接用**：访问 [在线页面](https://YOUR-USERNAME.github.io/OmniPage/)，或下载 `index.html` 双击打开
+1. **直接用**：下载 `index.html` 到本地，并保存在个人电脑一个稳定的位置，双击打开
 2. **设为首页**：把它设为浏览器启动页或书签，每次打开浏览器直达
 3. **自定义**：点左侧「编辑」→ 修改/拖拽/增删链接和分类 → 点「保存」
 4. **备份**：点「导出」下载 JSON 备份；换电脑时点「导入」恢复
