@@ -4,7 +4,7 @@
 
 **在线体验**：[https:/hemanruc.github.io/OmniPage/](https://hemanruc.github.io/OmniPage/)
 
-![截图](screenshot.png)
+![截图](ScreenShot.png)
 
 ## 这是什么？
 
