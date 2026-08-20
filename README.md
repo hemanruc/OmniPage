@@ -2,8 +2,6 @@
 
 > 你的个人网址导航页：一个文件，双击就能用，不用安装任何东西。
 
-**在线体验**：[https:/hemanruc.github.io/OmniPage/](https://hemanruc.github.io/OmniPage/)
-
 ![截图](ScreenShot.png)
 
 ---
