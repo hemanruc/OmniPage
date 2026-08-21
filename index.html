@@ -61,17 +61,22 @@
         }
         .nav-item {
             display: block;
+            width: 100%;
             padding: 8px 10px;
             border-radius: var(--radius-sm);
             font-size: 13px;
+            font-family: inherit;
             color: var(--text);
             text-decoration: none;
+            text-align: left;
+            background: transparent;
             cursor: pointer;
             transition: all 0.15s;
             margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            border: 0;
             border-left: 3px solid transparent;
         }
         .nav-item:hover { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); }
@@ -163,6 +168,7 @@
             border: 2px solid transparent;
             cursor: pointer;
             font-size: 14px;
+            font-family: inherit;
             font-weight: 500;
             color: var(--text-secondary);
             transition: all 0.2s;
@@ -239,6 +245,9 @@
             box-shadow: 0 0 0 2px white;
         }
         .link-status.show { display: block; }
+        .link-status.ok { display: block; background: var(--success); }
+        .link-status.dead { display: block; background: #ff3b30; }
+        .link-status.unknown { display: block; background: #8a6d3b; }
         .link-status.checking {
             display: block;
             background: #ffcc00;
@@ -301,14 +310,17 @@
             padding: 12px;
             border: 2px solid var(--border);
             border-radius: var(--radius-sm);
+            background: transparent;
+            color: inherit;
+            font: inherit;
             cursor: pointer;
             text-align: center;
             transition: all 0.2s;
         }
         .export-option:hover { border-color: var(--accent); }
         .export-option.selected { border-color: var(--accent); background: var(--accent-light); }
-        .export-option-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-        .export-option-desc { font-size: 12px; color: var(--text-secondary); }
+        .export-option-title { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .export-option-desc { display: block; font-size: 12px; color: var(--text-secondary); }
         textarea.json-area { width: 100%; min-height: 200px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; outline: none; }
         textarea.json-area:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
         .hint { font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
@@ -336,6 +348,23 @@
         .btn-danger:hover { background: #ffe0e0; }
         .btn-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .btn-success:hover { background: #d4edda; }
+        .btn:disabled, .search-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+        }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
 
         /* ========== Toast 提示 ========== */
         .toast {
@@ -536,6 +565,7 @@
         .fig-dot { width: 8px; height: 8px; border-radius: 50%; }
         .fig-dot.ok { background: #2e7d32; }
         .fig-dot.dead { background: #ff3b30; }
+        .fig-dot.unknown { background: #8a6d3b; }
         .fig-cal-card {
             background: white;
             border: 1px solid var(--border);
@@ -588,16 +618,16 @@
         <div class="sidebar-title">导航主页</div>
         <div id="navList"></div>
         <div class="sidebar-bottom" id="sidebarBottom">
-            <button class="btn btn-primary" id="btnEdit" onclick="toggleEdit()">编辑</button>
-            <button class="btn btn-success" id="btnSave" onclick="saveData()" style="display:none">保存</button>
-            <button class="btn btn-secondary" id="btnCancel" onclick="cancelEdit()" style="display:none">取消</button>
-            <button class="btn btn-secondary" onclick="exportData()">导出</button>
-            <button class="btn btn-secondary" onclick="showImport()">导入</button>
-            <button class="btn btn-secondary" onclick="checkAllLinks()">检查链接</button>
-            <button class="btn btn-secondary" onclick="showGuide()">功能介绍</button>
+            <button type="button" class="btn btn-primary" id="btnEdit" onclick="toggleEdit()">编辑</button>
+            <button type="button" class="btn btn-success" id="btnSave" onclick="saveData()" style="display:none">保存</button>
+            <button type="button" class="btn btn-secondary" id="btnCancel" onclick="cancelEdit()" style="display:none">取消</button>
+            <button type="button" class="btn btn-secondary" onclick="exportData()">导出</button>
+            <button type="button" class="btn btn-secondary" onclick="showImport()">导入</button>
+            <button type="button" class="btn btn-secondary" id="btnCheckLinks" onclick="checkAllLinks()">检查链接</button>
+            <button type="button" class="btn btn-secondary" onclick="showGuide()">功能介绍</button>
         </div>
     </nav>
-    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+    <button type="button" class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="打开导航菜单" aria-expanded="false" aria-controls="sidebar">☰</button>
 
     <div class="main-wrap">
         <!-- 顶部日历 -->
@@ -608,15 +638,16 @@
         <!-- 融合搜索 -->
         <div class="search-section">
             <div class="search-box">
+                <label class="visually-hidden" for="searchInput">输入网页搜索关键词</label>
                 <input type="text" class="search-input" id="searchInput" placeholder="输入关键词搜索..." onkeydown="if(event.key==='Enter')doSearch()">
-                <button class="search-btn" onclick="doSearch()">搜索</button>
+                <button type="button" class="search-btn" onclick="doSearch()">搜索</button>
             </div>
             <div class="search-engines" id="engineList">
-                <span class="engine-tag active" data-url="https://www.quark.cn/s/?q=">夸克</span>
-                <span class="engine-tag" data-url="https://cn.bing.com/search?q=">必应</span>
-                <span class="engine-tag" data-url="https://www.google.com.hk/search?q=">谷歌</span>
-                <span class="engine-tag" data-url="https://s.taobao.com/search?q=">淘宝</span>
-                <span class="engine-tag" data-url="https://search.jd.com/Search?keyword=">京东</span>
+                <button type="button" class="engine-tag active" data-url="https://www.quark.cn/s/?q=" aria-pressed="true">夸克</button>
+                <button type="button" class="engine-tag" data-url="https://cn.bing.com/search?q=" aria-pressed="false">必应</button>
+                <button type="button" class="engine-tag" data-url="https://www.google.com.hk/search?q=" aria-pressed="false">谷歌</button>
+                <button type="button" class="engine-tag" data-url="https://s.taobao.com/search?q=" aria-pressed="false">淘宝</button>
+                <button type="button" class="engine-tag" data-url="https://search.jd.com/Search?keyword=" aria-pressed="false">京东</button>
             </div>
         </div>
 
@@ -624,7 +655,7 @@
         <div class="container" id="mainContainer"></div>
 
         <div class="add-cat-bar" id="addCatBar">
-            <button class="btn btn-primary" onclick="addCategory()">添加新分类</button>
+            <button type="button" class="btn btn-primary" onclick="addCategory()">添加新分类</button>
         </div>
 
         <!-- 功能介绍页 -->
@@ -726,7 +757,7 @@
                             <li><strong>导出</strong>：生成 JSON 或 TXT 格式文件下载到电脑，建议定期备份</li>
                             <li><strong>导入</strong>：上传之前备份的 JSON 文件，或粘贴 JSON 文本，即可恢复全部数据</li>
                         </ul>
-                        <p>🔒 <em>数据仅存储在浏览器 localStorage 中，不会上传到任何服务器。</em></p>
+                        <p>🔒 <em>书签数据保存在当前浏览器的 localStorage 中，OmniPage 本身不设数据服务器；链接检查会由浏览器直接请求相应网址。</em></p>
                     </div>
                 </div>
 
@@ -735,14 +766,14 @@
                         <div class="fig-check">
                             <div class="fig-link">链接A <span class="fig-dot ok"></span></div>
                             <div class="fig-link">链接B <span class="fig-dot dead"></span></div>
-                            <div class="fig-link">链接C <span class="fig-dot ok"></span></div>
+                            <div class="fig-link">链接C <span class="fig-dot unknown"></span></div>
                         </div>
                     </div>
                     <div class="guide-text">
                         <h3><span class="num">6</span>链接检查</h3>
                         <p>点击左侧「<strong>检查链接</strong>」按钮，系统会批量检测所有 URL 的可达性。</p>
-                        <p>检测完成后，失效链接的卡片右上角会显示<strong>红色小圆点</strong>，方便您及时清理或更新。</p>
-                        <p>⚠️ 注意：部分网站可能因反爬虫机制被误判，请结合实际情况判断。</p>
+                        <p>检测完成后会显示三态结果：<strong>绿色为可访问、红色为明确的 404/410、棕色为浏览器无法判定</strong>。</p>
+                        <p>⚠️ 跨域、反爬、登录墙或网络策略会使浏览器无法读取状态码；这类结果不会再被误报为死链，请人工确认。</p>
                     </div>
                 </div>
 
@@ -751,7 +782,7 @@
                         <div class="fig-cal">
                             <div class="fig-cal-card">
                                 <div class="fig-cal-date">2026年08月05日</div>
-                                <div class="fig-cal-lunar">农历二〇二六年六月廿三</div>
+                                <div class="fig-cal-lunar">农历丙午年六月廿三</div>
                             </div>
                         </div>
                     </div>
@@ -769,61 +800,41 @@
     </div>
 
     <!-- 导入 / 导出弹窗 -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal">
+    <div class="modal-overlay" id="modal" aria-hidden="true" inert>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalHint" tabindex="-1">
             <div class="modal-header" id="modalTitle">导出数据</div>
             <div class="modal-body">
                 <div class="export-options" id="exportOptions">
-                    <div class="export-option selected" data-format="json" onclick="selectExportFormat('json')">
-                        <div class="export-option-title">JSON</div>
-                        <div class="export-option-desc">结构化数据，适合备份恢复</div>
-                    </div>
-                    <div class="export-option" data-format="txt" onclick="selectExportFormat('txt')">
-                        <div class="export-option-title">TXT</div>
-                        <div class="export-option-desc">纯文本格式，逐行罗列</div>
-                    </div>
+                    <button type="button" class="export-option selected" data-format="json" aria-pressed="true" onclick="selectExportFormat('json')">
+                        <span class="export-option-title">JSON</span>
+                        <span class="export-option-desc">结构化数据，适合备份恢复</span>
+                    </button>
+                    <button type="button" class="export-option" data-format="txt" aria-pressed="false" onclick="selectExportFormat('txt')">
+                        <span class="export-option-title">TXT</span>
+                        <span class="export-option-desc">纯文本格式，逐行罗列</span>
+                    </button>
                 </div>
                 <div class="file-input-wrap" id="importFileWrap" style="display:none">
                     <input type="file" id="importFile" accept=".json" onchange="handleFileImport(this)">
-                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">上传文件</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('importFile').click()">上传文件</button>
                 </div>
-                <textarea class="json-area" id="jsonArea" placeholder=""></textarea>
+                <textarea class="json-area" id="jsonArea" aria-label="导入或导出的数据内容" placeholder=""></textarea>
                 <div class="hint" id="modalHint">点击下方按钮直接保存到本地，或复制文本手动保存。</div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
-                <button class="btn btn-primary" id="btnDownload" onclick="downloadExport()">下载文件</button>
-                <button class="btn btn-primary" id="modalAction" onclick="confirmImport()">确认导入</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">关闭</button>
+                <button type="button" class="btn btn-primary" id="btnDownload" onclick="downloadExport()">下载文件</button>
+                <button type="button" class="btn btn-primary" id="modalAction" onclick="confirmImport()">确认导入</button>
             </div>
         </div>
     </div>
 
 <script>
 /* ============================================================
- * 农历数据（1900–2100 年）
- * ============================================================ */
-const lunarInfo = [
-0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
-0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
-0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
-0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
-0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
-0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,
-0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
-0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,
-0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
-0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,
-0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
-0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
-0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
-0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
-0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0
-];
-
-/* ============================================================
  * 默认书签数据（首次使用或数据损坏时加载）
  * ============================================================ */
 const defaultData = {
+    "schemaVersion": 1,
     "categories": [
         {
             "id": "useful",
@@ -894,7 +905,16 @@ const defaultData = {
  * 常量与工具函数
  * ============================================================ */
 const STORAGE_KEY = 'omnipage_data';
+const BACKUP_KEY = 'omnipage_data_backup';
+const APP_VERSION = '1.0.1';
+const DATA_SCHEMA_VERSION = 1;
 const MOBILE_BREAKPOINT = 900;
+const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+const MAX_CATEGORIES = 200;
+const MAX_LINKS_PER_CATEGORY = 2000;
+const MAX_TOTAL_LINKS = 10000;
+const FIELD_LIMITS = Object.freeze({ id: 100, title: 120, name: 200, url: 2048, desc: 500, keywords: 500 });
+const ALLOWED_URL_PROTOCOLS = new Set(['http:', 'https:']);
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
@@ -911,10 +931,116 @@ function escapeHtml(text) {
         .replace(/'/g, '&#39;');
 }
 
+function isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function normalizeText(value, fieldName, maxLength, required = false) {
+    if (value === undefined || value === null) value = '';
+    if (typeof value !== 'string') throw new Error(`${fieldName} 必须是文本`);
+    const normalized = value.trim();
+    if (required && !normalized) throw new Error(`${fieldName} 不能为空`);
+    if (normalized.length > maxLength) throw new Error(`${fieldName} 超过 ${maxLength} 个字符`);
+    return normalized;
+}
+
+/** 仅允许可安全打开的新窗口网址；无协议的网址默认补全为 HTTPS。 */
+function normalizeUrl(value, fieldName = 'URL') {
+    let url = normalizeText(value, fieldName, FIELD_LIMITS.url, true);
+    if (!/^[a-z][a-z\d+.-]*:/i.test(url)) url = `https://${url}`;
+    let parsed;
+    try {
+        parsed = new URL(url);
+    } catch (error) {
+        throw new Error(`${fieldName} 不是有效网址`);
+    }
+    if (!ALLOWED_URL_PROTOCOLS.has(parsed.protocol)) {
+        throw new Error(`${fieldName} 只允许 http:// 或 https://`);
+    }
+    if (parsed.username || parsed.password) {
+        throw new Error(`${fieldName} 不能包含用户名或密码`);
+    }
+    return parsed.href;
+}
+
+/** 对导入、保存和恢复数据使用同一套严格校验，并移除未知运行时字段。 */
+function normalizeData(data) {
+    if (!isPlainObject(data) || !Array.isArray(data.categories)) {
+        throw new Error('根对象必须包含 categories 数组');
+    }
+    if (data.schemaVersion !== undefined &&
+        (!Number.isInteger(data.schemaVersion) || data.schemaVersion < 1 || data.schemaVersion > DATA_SCHEMA_VERSION)) {
+        throw new Error(`不支持的数据版本：${data.schemaVersion}`);
+    }
+    if (data.categories.length > MAX_CATEGORIES) {
+        throw new Error(`分类数量不能超过 ${MAX_CATEGORIES}`);
+    }
+
+    let totalLinks = 0;
+    const usedIds = new Set();
+    const categories = data.categories.map((category, catIdx) => {
+        if (!isPlainObject(category)) throw new Error(`第 ${catIdx + 1} 个分类格式无效`);
+        if (!Array.isArray(category.links)) throw new Error(`第 ${catIdx + 1} 个分类缺少 links 数组`);
+        if (category.links.length > MAX_LINKS_PER_CATEGORY) {
+            throw new Error(`第 ${catIdx + 1} 个分类的链接不能超过 ${MAX_LINKS_PER_CATEGORY} 个`);
+        }
+        totalLinks += category.links.length;
+        if (totalLinks > MAX_TOTAL_LINKS) throw new Error(`链接总数不能超过 ${MAX_TOTAL_LINKS} 个`);
+
+        let id = normalizeText(category.id, `第 ${catIdx + 1} 个分类的 id`, FIELD_LIMITS.id);
+        if (!id || usedIds.has(id)) id = `cat_${catIdx + 1}`;
+        while (usedIds.has(id)) id += '_copy';
+        usedIds.add(id);
+
+        const title = normalizeText(category.title, `第 ${catIdx + 1} 个分类标题`, FIELD_LIMITS.title, true);
+        const links = category.links.map((link, linkIdx) => {
+            const prefix = `第 ${catIdx + 1} 个分类第 ${linkIdx + 1} 个链接`;
+            if (!isPlainObject(link)) throw new Error(`${prefix}格式无效`);
+            return {
+                name: normalizeText(link.name, `${prefix}名称`, FIELD_LIMITS.name, true),
+                url: normalizeUrl(link.url, `${prefix} URL`),
+                desc: normalizeText(link.desc, `${prefix}备注`, FIELD_LIMITS.desc),
+                keywords: normalizeText(link.keywords, `${prefix}关键词`, FIELD_LIMITS.keywords)
+            };
+        });
+        return { id, title, links };
+    });
+
+    return { schemaVersion: DATA_SCHEMA_VERSION, categories };
+}
+
+function createExportPayload() {
+    const normalized = normalizeData(appData);
+    return {
+        schemaVersion: DATA_SCHEMA_VERSION,
+        appVersion: APP_VERSION,
+        exportedAt: new Date().toISOString(),
+        categories: normalized.categories
+    };
+}
+
+/** 写入前先保存上一份有效数据；写入失败时不会切换内存中的数据。 */
+function persistData(data, createBackup = true) {
+    const normalized = normalizeData(data);
+    const current = localStorage.getItem(STORAGE_KEY);
+    if (createBackup && current !== null) {
+        let currentIsValid = false;
+        try {
+            normalizeData(JSON.parse(current));
+            currentIsValid = true;
+        } catch (error) { /* 不用损坏的主数据覆盖有效备份 */ }
+        if (currentIsValid) localStorage.setItem(BACKUP_KEY, current);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
+}
+
 /** 底部 Toast 提示 */
 function showToast(msg) {
     const toast = document.createElement('div');
     toast.className = 'toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -925,94 +1051,35 @@ function showToast(msg) {
 }
 
 /* ============================================================
- * 农历计算
+ * 农历格式化：使用浏览器内置 Chinese calendar，避免静态表越界和年份偏移
  * ============================================================ */
-function lunarYearDays(y) {
-    let sum = 348;
-    for (let i = 0x8000; i > 0x8; i >>= 1) {
-        sum += (lunarInfo[y - 1900] & i) ? 1 : 0;
-    }
-    return sum + leapDays(y);
+function lunarDayName(day) {
+    const digits = ['十', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+    if (day === 10) return '初十';
+    if (day === 20) return '二十';
+    if (day === 30) return '三十';
+    if (day < 10) return `初${digits[day]}`;
+    if (day < 20) return `十${digits[day - 10]}`;
+    if (day < 30) return `廿${digits[day - 20]}`;
+    return '';
 }
 
-function leapDays(y) {
-    if (leapMonth(y)) return (lunarInfo[y - 1900] & 0x10000) ? 30 : 29;
-    return 0;
-}
-
-function leapMonth(y) {
-    return lunarInfo[y - 1900] & 0xf;
-}
-
-function monthDays(y, m) {
-    return (lunarInfo[y - 1900] & (0x10000 >> m)) ? 30 : 29;
-}
-
-function solarToLunar(date) {
-    const y = date.getFullYear();
-    if (y < 1900 || y > 2100) return null;
-
-    const baseDate = new Date(1900, 0, 31);
-    let offset = Math.floor((date - baseDate) / 86400000);
-
-    let lunarYear = 1900;
-    let i;
-    for (i = 1900; i < 2100 && offset > 0; i++) {
-        offset -= lunarYearDays(i);
-        lunarYear = i;
+function formatLunarDate(date) {
+    try {
+        const formatter = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+        if (formatter.resolvedOptions().calendar !== 'chinese') return '';
+        const parts = formatter.formatToParts(date);
+        const getPart = type => parts.find(part => part.type === type)?.value || '';
+        const month = getPart('month');
+        const day = Number(getPart('day'));
+        const yearName = getPart('yearName') || getPart('relatedYear');
+        if (!month || !Number.isInteger(day) || day < 1 || day > 30) return '';
+        return `农历${yearName ? `${yearName}年` : ''}${month}${lunarDayName(day)}`;
+    } catch (error) {
+        return '';
     }
-    if (offset < 0) {
-        offset += lunarYearDays(lunarYear);
-        lunarYear--;
-    }
-
-    const leap = leapMonth(lunarYear);
-    let isLeap = false;
-    let lunarMonth = 1;
-    for (i = 1; i < 13 && offset > 0; i++) {
-        let temp;
-        if (leap > 0 && i === leap + 1 && !isLeap) {
-            --i;
-            isLeap = true;
-            temp = leapDays(lunarYear);
-        } else {
-            temp = monthDays(lunarYear, i);
-        }
-        if (isLeap && i === leap + 1) isLeap = false;
-        offset -= temp;
-        if (!isLeap) lunarMonth++;
-    }
-    if (offset === 0 && leap > 0 && i === leap + 1) {
-        if (isLeap) { isLeap = false; } else { isLeap = true; --i; }
-    }
-    if (offset < 0) {
-        offset += isLeap ? leapDays(lunarYear) : monthDays(lunarYear, i - 1);
-        if (!isLeap) lunarMonth--;
-    }
-    return { year: lunarYear, month: lunarMonth, day: offset + 1, isLeap: isLeap };
-}
-
-/** 数字转中文（如 2026 → 二〇二六样式的逐位转换用于年份，带单位转换用于月日） */
-function numToChinese(num) {
-    const chars = '零一二三四五六七八九';
-    if (num === 0) return '零';
-    const units = ['', '十', '百', '千'];
-    let str = '';
-    let unitPos = 0;
-    let zero = false;
-    while (num > 0) {
-        const digit = num % 10;
-        if (digit === 0) {
-            if (!zero && str) zero = true;
-        } else {
-            if (zero) { str = chars[0] + str; zero = false; }
-            str = chars[digit] + units[unitPos] + str;
-        }
-        num = Math.floor(num / 10);
-        unitPos++;
-    }
-    if (str.startsWith('一十') && str.length === 2) str = str.substring(1);
-    return str;
 }
 
 /* ============================================================
@@ -1025,6 +1092,10 @@ let dragSrc = null;               // 当前拖拽源 { type, catIdx, linkIdx }
 let currentExportFormat = 'json'; // 导出格式
 let sidebarOpen = false;          // 移动端侧栏展开状态
 let scrollObserver = null;        // 滚动高亮观察器
+let calendarTimer = null;         // 跨午夜自动刷新日历
+let modalReturnFocus = null;       // 关闭弹窗后恢复焦点
+let loadNotice = '';              // 启动时的数据恢复提示
+let isCheckingLinks = false;      // 防止重复执行链接检查
 
 /* ============================================================
  * 初始化
@@ -1035,24 +1106,50 @@ function init() {
     renderNav();
     setupEngines();
     updateCalendar();
+    scheduleCalendarRefresh();
+    syncSidebarA11y();
+    if (loadNotice) setTimeout(() => showToast(loadNotice), 0);
 }
 
-/** 从 localStorage 读取数据；缺失或损坏时回退到默认数据 */
+/** 从 localStorage 读取并校验数据；损坏时优先回退到上一份有效备份。 */
 function loadData() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return deepClone(defaultData);
+    let saved = null;
+    let backup = null;
     try {
-        const data = JSON.parse(saved);
-        // 兼容旧数据：补齐 keywords 字段
-        data.categories.forEach(cat => {
-            cat.links.forEach(link => {
-                if (link.keywords === undefined) link.keywords = '';
-            });
-        });
-        return data;
-    } catch (e) {
-        return deepClone(defaultData);
+        saved = localStorage.getItem(STORAGE_KEY);
+        backup = localStorage.getItem(BACKUP_KEY);
+    } catch (error) {
+        loadNotice = '浏览器禁止本地存储，当前使用默认数据';
+        return normalizeData(defaultData);
     }
+
+    if (saved) {
+        try {
+            return normalizeData(JSON.parse(saved));
+        } catch (primaryError) {
+            if (backup) {
+                try {
+                    const recovered = normalizeData(JSON.parse(backup));
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(recovered));
+                    } catch (writeError) { /* 只读环境仍可使用内存中的备份 */ }
+                    loadNotice = '主数据损坏，已恢复上一份本地备份';
+                    return recovered;
+                } catch (backupError) { /* 继续回退默认数据 */ }
+            }
+            loadNotice = '本地数据无法读取，已回退到默认数据';
+        }
+    } else if (backup) {
+        try {
+            const recovered = normalizeData(JSON.parse(backup));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(recovered));
+            } catch (writeError) { /* 只读环境仍可使用内存中的备份 */ }
+            loadNotice = '主数据缺失，已恢复上一份本地备份';
+            return recovered;
+        } catch (backupError) { /* 继续回退默认数据 */ }
+    }
+    return normalizeData(defaultData);
 }
 
 /* ============================================================
@@ -1066,15 +1163,29 @@ function updateCalendar() {
     const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
     const weekday = weekdays[now.getDay()];
 
-    let lunarStr = '';
-    const lunar = solarToLunar(now);
-    if (lunar) {
-        lunarStr = `农历${numToChinese(lunar.year)}年${numToChinese(lunar.month)}月${numToChinese(lunar.day)}日`;
-    }
+    const calendar = $('#calendarDate');
+    const gregorian = document.createElement('div');
+    gregorian.className = 'cal-gregorian';
+    gregorian.textContent = `${year}年${month}月${day}日 ${weekday}`;
+    calendar.replaceChildren(gregorian);
 
-    $('#calendarDate').innerHTML =
-        `<div class="cal-gregorian">${year}年${month}月${day}日 ${weekday}</div>` +
-        (lunarStr ? `<div class="cal-lunar">${lunarStr}</div>` : '');
+    const lunarStr = formatLunarDate(now);
+    if (lunarStr) {
+        const lunar = document.createElement('div');
+        lunar.className = 'cal-lunar';
+        lunar.textContent = lunarStr;
+        calendar.appendChild(lunar);
+    }
+}
+
+function scheduleCalendarRefresh() {
+    if (calendarTimer) clearTimeout(calendarTimer);
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    calendarTimer = setTimeout(() => {
+        updateCalendar();
+        scheduleCalendarRefresh();
+    }, Math.max(1000, nextMidnight - now));
 }
 
 /* ============================================================
@@ -1085,11 +1196,11 @@ function renderNav() {
     navList.innerHTML = '';
 
     // 顶部「融合搜索」入口
-    const searchItem = document.createElement('a');
+    const searchItem = document.createElement('button');
+    searchItem.type = 'button';
     searchItem.className = 'nav-item';
     searchItem.textContent = '融合搜索';
-    searchItem.onclick = (e) => {
-        e.preventDefault();
+    searchItem.onclick = () => {
         hideGuide();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if (window.innerWidth <= MOBILE_BREAKPOINT) toggleSidebar();
@@ -1097,12 +1208,12 @@ function renderNav() {
     navList.appendChild(searchItem);
 
     appData.categories.forEach((cat, idx) => {
-        const item = document.createElement('a');
+        const item = document.createElement('button');
+        item.type = 'button';
         item.className = 'nav-item';
         item.dataset.idx = idx;
         item.textContent = stripEmoji(cat.title);
-        item.onclick = (e) => {
-            e.preventDefault();
+        item.onclick = () => {
             hideGuide();
             scrollToCategory(idx);
             if (window.innerWidth <= MOBILE_BREAKPOINT) toggleSidebar();
@@ -1134,6 +1245,23 @@ function scrollToCategory(idx) {
 function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
     $('#sidebar').classList.toggle('open', sidebarOpen);
+    syncSidebarA11y();
+}
+
+function syncSidebarA11y() {
+    const sidebar = $('#sidebar');
+    const toggle = $('#sidebarToggle');
+    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    if (!isMobile) {
+        sidebarOpen = false;
+        sidebar.classList.remove('open');
+    }
+    const isHidden = isMobile && !sidebarOpen;
+    const modalActive = $('#modal')?.classList.contains('active');
+    sidebar.inert = Boolean(isHidden || modalActive);
+    sidebar.setAttribute('aria-hidden', String(isHidden || modalActive));
+    toggle.setAttribute('aria-expanded', String(isMobile && sidebarOpen));
+    toggle.setAttribute('aria-label', sidebarOpen ? '关闭导航菜单' : '打开导航菜单');
 }
 
 /* ============================================================
@@ -1178,12 +1306,12 @@ function render() {
         header.className = 'cat-header';
         header.innerHTML = isEditing
             ? `<span class="cat-deco"></span>` +
-              `<input class="cat-title-input" value="${escapeHtml(cat.title)}" onchange="updateCatTitle(${catIdx}, this.value)">` +
+              `<input class="cat-title-input" aria-label="分类标题" value="${escapeHtml(cat.title)}" onchange="updateCatTitle(${catIdx}, this.value)">` +
               `<span class="drag-hint">拖拽/箭头调整顺序</span>` +
               `<div class="cat-actions">` +
-              `<button class="btn-xs btn-secondary" onclick="moveCat(${catIdx}, -1)">↑</button>` +
-              `<button class="btn-xs btn-secondary" onclick="moveCat(${catIdx}, 1)">↓</button>` +
-              `<button class="btn-xs btn-danger" onclick="deleteCategory(${catIdx})">删除</button>` +
+              `<button type="button" class="btn-xs btn-secondary" aria-label="上移分类" onclick="moveCat(${catIdx}, -1)">↑</button>` +
+              `<button type="button" class="btn-xs btn-secondary" aria-label="下移分类" onclick="moveCat(${catIdx}, 1)">↓</button>` +
+              `<button type="button" class="btn-xs btn-danger" onclick="deleteCategory(${catIdx})">删除</button>` +
               `</div>`
             : `<span class="cat-deco"></span><div class="cat-title">${escapeHtml(cat.title)}</div>`;
         section.appendChild(header);
@@ -1203,7 +1331,7 @@ function render() {
             cat.links.forEach((link, linkIdx) => {
                 grid.appendChild(isEditing
                     ? buildEditCard(link, catIdx, linkIdx)
-                    : buildLinkCard(link));
+                    : buildLinkCard(link, catIdx, linkIdx));
             });
         } else if (!isEditing) {
             grid.innerHTML = '<div class="empty-state">暂无链接</div>';
@@ -1215,7 +1343,7 @@ function render() {
         if (isEditing) {
             const addBar = document.createElement('div');
             addBar.className = 'add-link-bar';
-            addBar.innerHTML = `<button class="btn btn-secondary" style="width:100%" onclick="addLink(${catIdx})">➕ 添加链接</button>`;
+            addBar.innerHTML = `<button type="button" class="btn btn-secondary" style="width:100%" onclick="addLink(${catIdx})">➕ 添加链接</button>`;
             section.appendChild(addBar);
         }
 
@@ -1226,21 +1354,22 @@ function render() {
 }
 
 /** 浏览模式下的链接卡片 */
-function buildLinkCard(link) {
+function buildLinkCard(link, catIdx, linkIdx) {
     const a = document.createElement('a');
     a.className = 'link-card';
     a.href = link.url;
     a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.referrerPolicy = 'no-referrer';
+    a.dataset.catIdx = catIdx;
+    a.dataset.linkIdx = linkIdx;
     a.title = link.url + (link.desc ? ' — ' + link.desc : '') + (link.keywords ? ' [' + link.keywords + ']' : '');
-    const deadDot = link._dead
-        ? '<span class="link-status show" style="display:block"></span>'
-        : '<span class="link-status"></span>';
     a.innerHTML =
         `<div style="overflow:hidden;width:100%">` +
         `<div class="link-name">${escapeHtml(link.name)}</div>` +
         (link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : '') +
         (link.keywords ? `<div class="link-keywords">${escapeHtml(link.keywords)}</div>` : '') +
-        `</div>` + deadDot;
+        `</div><span class="link-status" role="img" aria-label="尚未检查"></span>`;
     return a;
 }
 
@@ -1256,16 +1385,18 @@ function buildEditCard(link, catIdx, linkIdx) {
     card.addEventListener('drop', e => handleLinkItemDrop(e, catIdx, linkIdx));
     card.addEventListener('dragend', handleLinkDragEnd);
 
-    const deadDot = link._dead ? '<span class="link-status show" style="display:block"></span>' : '';
-    const field = (placeholder, key, value) =>
-        `<input placeholder="${placeholder}" value="${escapeHtml(value)}" onchange="updateLink(${catIdx}, ${linkIdx}, '${key}', this.value)">`;
-    card.innerHTML = deadDot +
+    const field = (label, key, value, inputMode = '') =>
+        `<input aria-label="${escapeHtml(label)}" placeholder="${escapeHtml(label)}" ${inputMode ? `inputmode="${inputMode}"` : ''} value="${escapeHtml(value)}" onchange="updateLink(${catIdx}, ${linkIdx}, '${key}', this.value)">`;
+    card.innerHTML =
         `<div class="edit-row">` +
         field('姓名/名称', 'name', link.name) +
-        field('URL', 'url', link.url) +
+        field('URL', 'url', link.url, 'url') +
         field('备注', 'desc', link.desc || '') +
         field('关键词', 'keywords', link.keywords || '') +
-        `<div class="edit-actions"><button class="btn-xs btn-danger" onclick="deleteLink(${catIdx}, ${linkIdx})">删除</button></div>` +
+        `<div class="edit-actions">` +
+        `<button type="button" class="btn-xs btn-secondary" aria-label="上移链接" onclick="moveLink(${catIdx}, ${linkIdx}, -1)">↑</button>` +
+        `<button type="button" class="btn-xs btn-secondary" aria-label="下移链接" onclick="moveLink(${catIdx}, ${linkIdx}, 1)">↓</button>` +
+        `<button type="button" class="btn-xs btn-danger" onclick="deleteLink(${catIdx}, ${linkIdx})">删除</button></div>` +
         `</div>`;
     return card;
 }
@@ -1369,6 +1500,10 @@ function handleLinkDragEnd(e) {
  * 编辑模式
  * ============================================================ */
 function toggleEdit() {
+    if (isCheckingLinks) {
+        showToast('链接检查进行中，请稍后编辑');
+        return;
+    }
     isEditing = true;
     tempData = deepClone(appData);
     hideGuide();
@@ -1377,12 +1512,14 @@ function toggleEdit() {
 }
 
 function saveData() {
+    try {
+        appData = persistData(appData);
+    } catch (error) {
+        alert(`无法保存：${error.message}`);
+        return;
+    }
     isEditing = false;
     tempData = null;
-    appData.categories.forEach(cat => {
-        cat.links.forEach(link => delete link._dead);
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     updateEditUI();
     hideGuide();
     render();
@@ -1424,7 +1561,7 @@ function deleteLink(catIdx, linkIdx) {
 }
 
 function addLink(catIdx) {
-    appData.categories[catIdx].links.push({ name: '新链接', url: 'https://', desc: '', keywords: '' });
+    appData.categories[catIdx].links.push({ name: '新链接', url: 'https://example.com/', desc: '', keywords: '' });
     render();
 }
 
@@ -1450,6 +1587,14 @@ function moveCat(idx, dir) {
     renderNav();
 }
 
+function moveLink(catIdx, linkIdx, dir) {
+    const links = appData.categories[catIdx].links;
+    const newIdx = linkIdx + dir;
+    if (newIdx < 0 || newIdx >= links.length) return;
+    [links[linkIdx], links[newIdx]] = [links[newIdx], links[linkIdx]];
+    render();
+}
+
 /* ============================================================
  * 融合搜索
  * ============================================================ */
@@ -1457,8 +1602,12 @@ function setupEngines() {
     const tags = $$('.engine-tag');
     tags.forEach(tag => {
         tag.addEventListener('click', () => {
-            tags.forEach(t => t.classList.remove('active'));
+            tags.forEach(t => {
+                t.classList.remove('active');
+                t.setAttribute('aria-pressed', 'false');
+            });
             tag.classList.add('active');
+            tag.setAttribute('aria-pressed', 'true');
         });
     });
 }
@@ -1468,7 +1617,8 @@ function doSearch() {
     if (!kw) return;
     hideGuide();
     const active = $('.engine-tag.active');
-    window.open(active.dataset.url + encodeURIComponent(kw), '_blank');
+    const searchUrl = active.dataset.url + encodeURIComponent(kw);
+    window.open(searchUrl, '_blank', 'noopener,noreferrer');
 }
 
 /* ============================================================
@@ -1479,79 +1629,115 @@ async function checkAllLinks() {
         showToast('请先保存或取消编辑后再检查');
         return;
     }
+    if (isCheckingLinks) {
+        showToast('链接检查已经在进行中');
+        return;
+    }
+
+    const button = $('#btnCheckLinks');
+    const originalLabel = button.textContent;
+    isCheckingLinks = true;
+    button.disabled = true;
+    button.textContent = '检查中...';
+    button.setAttribute('aria-busy', 'true');
     showToast('开始检查链接，请稍候...');
 
-    // 建立「名称 → 卡片」映射，并把所有状态点置为检查中
-    const cards = Array.from($$('.link-card'));
-    const cardMap = new Map();
-    cards.forEach(card => {
-        const name = card.querySelector('.link-name')?.textContent;
-        if (name) cardMap.set(name, card);
+    try {
+        const cardMap = new Map();
+        $$('.link-card').forEach(card => {
+            const key = `${card.dataset.catIdx}:${card.dataset.linkIdx}`;
+            cardMap.set(key, card);
+            const statusDot = card.querySelector('.link-status');
+            statusDot.className = 'link-status checking';
+            statusDot.title = '正在检查';
+            statusDot.setAttribute('aria-label', '正在检查');
+        });
 
-        let statusDot = card.querySelector('.link-status');
-        if (!statusDot) {
-            statusDot = document.createElement('span');
-            card.appendChild(statusDot);
-        }
-        statusDot.className = 'link-status checking';
-        statusDot.style.display = 'block';
-    });
+        const allLinks = [];
+        appData.categories.forEach((cat, catIdx) => {
+            cat.links.forEach((link, linkIdx) => allLinks.push({ link, catIdx, linkIdx }));
+        });
 
-    // 收集全部链接
-    const allLinks = [];
-    appData.categories.forEach((cat, catIdx) => {
-        cat.links.forEach((link, linkIdx) => allLinks.push({ link, catIdx, linkIdx }));
-    });
-
-    // 分批并发检查
-    let dead = 0;
-    const batchSize = 5;
-    for (let i = 0; i < allLinks.length; i += batchSize) {
-        const batch = allLinks.slice(i, i + batchSize);
-        await Promise.all(batch.map(async item => {
-            const result = await checkLink(item.link.url);
-            if (result === 'dead') {
-                item.link._dead = true;
-                dead++;
-            } else {
-                delete item.link._dead;
-            }
-            const card = cardMap.get(item.link.name);
-            const statusDot = card && card.querySelector('.link-status');
-            if (statusDot) {
-                statusDot.classList.remove('checking');
-                if (item.link._dead) {
-                    statusDot.classList.add('show');
-                    statusDot.style.display = 'block';
-                } else {
-                    statusDot.classList.remove('show');
-                    statusDot.style.display = 'none';
+        const counts = { ok: 0, dead: 0, unknown: 0 };
+        const labels = {
+            ok: '可访问',
+            dead: '明确失效（URL 无效或服务器返回 404/410）',
+            unknown: '浏览器无法判定（可能受 CORS、反爬或网络策略限制）'
+        };
+        const batchSize = 5;
+        for (let i = 0; i < allLinks.length; i += batchSize) {
+            const batch = allLinks.slice(i, i + batchSize);
+            await Promise.all(batch.map(async item => {
+                const result = await checkLink(item.link.url);
+                counts[result.state]++;
+                const key = `${item.catIdx}:${item.linkIdx}`;
+                const card = cardMap.get(key);
+                const statusDot = card?.querySelector('.link-status');
+                if (statusDot) {
+                    statusDot.className = `link-status ${result.state}`;
+                    statusDot.title = result.detail || labels[result.state];
+                    statusDot.setAttribute('aria-label', labels[result.state]);
                 }
-            }
-        }));
+            }));
+        }
+        showToast(`检查完成：可访问 ${counts.ok}，明确失效 ${counts.dead}，无法判定 ${counts.unknown}`);
+    } finally {
+        isCheckingLinks = false;
+        button.disabled = false;
+        button.textContent = originalLabel;
+        button.removeAttribute('aria-busy');
     }
-    showToast(`检查完成：${allLinks.length} 个链接，${dead} 个可能失效`);
 }
 
-/** 单个链接检查：先 HEAD，失败后退回 no-cors GET */
+async function fetchWithTimeout(url, options, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+function classifyReadableResponse(response) {
+    if (response.ok) return { state: 'ok', detail: `HTTP ${response.status}` };
+    if (response.status === 404 || response.status === 410) {
+        return { state: 'dead', detail: `HTTP ${response.status}` };
+    }
+    return { state: 'unknown', detail: `HTTP ${response.status}，需要人工确认` };
+}
+
+/**
+ * 单个链接检查：只把可读取的 404/410 判为失效。
+ * opaque 响应和跨域失败无法区分 CORS、反爬与真实断网，因此归为 unknown。
+ */
 async function checkLink(url) {
     try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
-        clearTimeout(timer);
-        if (res.ok) return 'ok';
-    } catch (e) { /* 忽略，继续尝试 GET */ }
+        url = normalizeUrl(url);
+    } catch (error) {
+        return { state: 'dead', detail: error.message };
+    }
 
     try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 8000);
-        await fetch(url, { method: 'GET', mode: 'no-cors', signal: controller.signal });
-        clearTimeout(timer);
-        return 'cors';
-    } catch (e) { /* 视为失效 */ }
+        const response = await fetchWithTimeout(url, {
+            method: 'HEAD', cache: 'no-store', redirect: 'follow'
+        });
+        const result = classifyReadableResponse(response);
+        if (result.state !== 'unknown') return result;
+    } catch (error) { /* 跨域或网络失败，继续用 no-cors 探测 */ }
 
-    return 'dead';
+    try {
+        const response = await fetchWithTimeout(url, {
+            method: 'GET', mode: 'no-cors', cache: 'no-store', redirect: 'follow'
+        });
+        if (response.type === 'opaque') {
+            return { state: 'unknown', detail: '收到 opaque 响应，浏览器无法读取状态码' };
+        }
+        return classifyReadableResponse(response);
+    } catch (error) {
+        const detail = error.name === 'AbortError' ? '检查超时，需要人工确认' : '网络或浏览器策略阻止检查';
+        return { state: 'unknown', detail };
+    }
 }
 
 /* ============================================================
@@ -1560,7 +1746,9 @@ async function checkLink(url) {
 function selectExportFormat(fmt) {
     currentExportFormat = fmt;
     $$('.export-option').forEach(el => {
-        el.classList.toggle('selected', el.dataset.format === fmt);
+        const selected = el.dataset.format === fmt;
+        el.classList.toggle('selected', selected);
+        el.setAttribute('aria-pressed', String(selected));
     });
     refreshExportContent();
 }
@@ -1569,7 +1757,7 @@ function selectExportFormat(fmt) {
 function refreshExportContent() {
     const hint = '点击下方按钮直接保存到本地，或复制文本手动保存。';
     if (currentExportFormat === 'json') {
-        $('#jsonArea').value = JSON.stringify(appData, null, 2);
+        $('#jsonArea').value = JSON.stringify(createExportPayload(), null, 2);
     } else {
         const lines = [];
         appData.categories.forEach(cat => {
@@ -1588,9 +1776,15 @@ function refreshExportContent() {
 }
 
 function exportData() {
+    if (isEditing) {
+        showToast('请先保存或取消编辑后再导出');
+        return;
+    }
     currentExportFormat = 'json';
     $$('.export-option').forEach(el => {
-        el.classList.toggle('selected', el.dataset.format === 'json');
+        const selected = el.dataset.format === 'json';
+        el.classList.toggle('selected', selected);
+        el.setAttribute('aria-pressed', String(selected));
     });
     $('#modalTitle').textContent = '导出数据';
     $('#modalAction').style.display = 'none';
@@ -1598,12 +1792,13 @@ function exportData() {
     $('#importFileWrap').style.display = 'none';
     $('#btnDownload').style.display = 'inline-flex';
     refreshExportContent();
-    $('#modal').classList.add('active');
+    openModal();
 }
 
 function downloadExport() {
     const content = $('#jsonArea').value;
-    const dateStr = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const filename = `omnipage-${dateStr}.${currentExportFormat}`;
     const mime = currentExportFormat === 'json' ? 'application/json' : 'text/plain';
     const blob = new Blob([content], { type: mime });
@@ -1614,7 +1809,7 @@ function downloadExport() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
     showToast('已下载: ' + filename);
 }
 
@@ -1622,23 +1817,34 @@ function downloadExport() {
  * 导入
  * ============================================================ */
 function showImport() {
+    if (isEditing) {
+        showToast('请先保存或取消编辑后再导入');
+        return;
+    }
     $('#jsonArea').value = '';
+    $('#importFile').value = '';
     $('#modalTitle').textContent = '导入数据';
-    $('#modalHint').textContent = '选择本地 JSON 文件上传，或粘贴 JSON 文本后点击确认导入。注意：这会覆盖当前所有数据！';
+    $('#modalHint').textContent = '仅接受 2 MB 内、结构有效且 URL 为 HTTP/HTTPS 的 JSON。确认后会先备份当前数据，再覆盖导入。';
     $('#modalAction').style.display = 'inline-flex';
     $('#exportOptions').style.display = 'none';
     $('#importFileWrap').style.display = 'block';
     $('#btnDownload').style.display = 'none';
-    $('#modal').classList.add('active');
+    openModal();
 }
 
 function handleFileImport(input) {
     const file = input.files[0];
     if (!file) return;
+    if (file.size > MAX_IMPORT_BYTES) {
+        alert('导入文件不能超过 2 MB');
+        input.value = '';
+        return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
         $('#jsonArea').value = e.target.result;
     };
+    reader.onerror = () => alert('无法读取所选文件');
     reader.readAsText(file);
     input.value = '';
 }
@@ -1647,21 +1853,47 @@ function confirmImport() {
     const text = $('#jsonArea').value.trim();
     if (!text) return;
     try {
+        if (new Blob([text]).size > MAX_IMPORT_BYTES) throw new Error('导入内容不能超过 2 MB');
         const data = JSON.parse(text);
-        if (!data.categories || !Array.isArray(data.categories)) throw new Error('格式错误');
-        appData = data;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        const candidate = normalizeData(data);
+        const categoryCount = candidate.categories.length;
+        const linkCount = candidate.categories.reduce((sum, category) => sum + category.links.length, 0);
+        if (!confirm(`确认导入 ${categoryCount} 个分类、${linkCount} 个链接吗？当前数据会先保存为本地备份。`)) return;
+        const persisted = persistData(candidate);
+        appData = persisted;
         render();
         renderNav();
         closeModal();
         showToast('导入成功');
-    } catch (e) {
-        alert('JSON 格式错误，请检查文本内容');
+    } catch (error) {
+        alert(`无法导入：${error.message}`);
     }
 }
 
+function openModal() {
+    const overlay = $('#modal');
+    modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    $('.main-wrap').inert = true;
+    $('#sidebar').inert = true;
+    $('#sidebarToggle').inert = true;
+    overlay.inert = false;
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => overlay.querySelector('.modal').focus());
+}
+
 function closeModal() {
-    $('#modal').classList.remove('active');
+    const overlay = $('#modal');
+    if (!overlay.classList.contains('active')) return;
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.inert = true;
+    $('.main-wrap').inert = false;
+    $('#sidebarToggle').inert = false;
+    syncSidebarA11y();
+    const returnTarget = modalReturnFocus;
+    modalReturnFocus = null;
+    if (returnTarget?.isConnected) returnTarget.focus();
 }
 
 /* ============================================================
@@ -1700,6 +1932,8 @@ document.addEventListener('keydown', (e) => {
         else if (isEditing) cancelEdit();
     }
 });
+
+window.addEventListener('resize', syncSidebarA11y);
 
 /* ============================================================
  * 启动

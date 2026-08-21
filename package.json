@@ -1,0 +1,19 @@
+{
+  "name": "omnipage",
+  "version": "1.0.1",
+  "private": true,
+  "description": "Regression tests for the zero-dependency OmniPage start page",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:html && npm run test:e2e",
+    "test:html": "html-validate index.html",
+    "test:e2e": "playwright test"
+  },
+  "engines": {
+    "node": "^22.16.0 || >=24.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "html-validate": "11.9.0"
+  }
+}
